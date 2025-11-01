@@ -43,3 +43,78 @@ export function initAdminAprobacionesPage() {
   addEventListeners();
 }
 
+async function loadRestaurantesPendientes() {
+  const container = document.querySelector('#lista-restaurantes-pendientes');
+  container.innerHTML = LOADER_HTML;
+
+  try {
+    const restaurantes = await getRestaurantesPendientes();
+    
+    const badge = document.querySelector('#rest-count-badge');
+    if (restaurantes.length > 0) {
+      badge.textContent = restaurantes.length;
+      badge.classList.remove('d-none');
+    } else {
+      badge.classList.add('d-none');
+    }
+
+    if (restaurantes.length === 0) {
+      container.innerHTML = `
+        <div class="text-center p-5">
+          <i class="bi bi-check-circle-fill display-4 text-success"></i>
+          <h4 class="mt-3">¡Todo al día!</h4>
+          <p class="text-muted">No hay restaurantes pendientes de aprobación.</p>
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = restaurantes.map(renderRestauranteCard).join('');
+
+  } catch (error) {
+    container.innerHTML = `<section class="alert alert-danger">${error.message}</section>`;
+  }
+}
+
+function renderRestauranteCard(restaurante) {
+  return `
+    <article class="card shadow-sm mb-3" id="restaurante-${restaurante._id}">
+      <section class="row g-0">
+        <aside class="col-md-4 col-lg-3">
+          <img 
+            src="${restaurante.imagenUrl || PLACEHOLDER_IMG}" 
+            class="img-fluid rounded-start" 
+            alt="Fachada de ${restaurante.nombre}" 
+            style="height: 100%; object-fit: cover; min-height: 150px;"
+          >
+        </aside>
+        <section class="col-md-8 col-lg-9">
+          <div class="card-body d-flex flex-column h-100">
+            <h5 class="card-title fw-bold">${restaurante.nombre}</h5>
+            <p class="card-text text-muted">${restaurante.categoriaInfo.nombre}</p>
+            <p class="card-text">${restaurante.descripcion}</p>
+            <p class="card-text"><small class="text-muted">${restaurante.ubicacion}</small></p>
+            
+            <footer class="mt-auto d-flex gap-2 pt-2">
+              <button 
+                class="btn btn-success" 
+                data-action="aprobar" 
+                data-id="${restaurante._id}"
+              >
+                <i class="bi bi-check-lg me-2"></i>Aprobar
+              </button>
+              <button 
+                class="btn btn-danger" 
+                data-action="rechazar" 
+                data-id="${restaurante._id}"
+              >
+                <i class="bi bi-trash me-2"></i>Rechazar
+              </button>
+            </footer>
+          </div>
+        </section>
+      </section>
+    </article>
+  `;
+}
+
