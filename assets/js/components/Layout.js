@@ -288,3 +288,84 @@ function addLayoutEventListeners() {
   document.getElementById('proponer-restaurante-btn').addEventListener('click', handleOpenProposeModal);
   document.getElementById('propose-form').addEventListener('submit', handleProposeSubmit);
 }
+
+async function handleOpenProposeModal() {
+  const select = document.getElementById('propose-categoria');
+  const alerta = document.getElementById('propose-alerta');
+  select.innerHTML = '<option value="">Cargando categorías...</option>';
+  alerta.classList.add('d-none');
+  
+  try {
+    const categorias = await getCategorias();
+    
+    if (categorias.length === 0) {
+      select.innerHTML = '<option value="">No hay categorías disponibles</option>';
+      select.disabled = true;
+    } else {
+      select.innerHTML = '<option value="" disabled selected>Selecciona una categoría</option>';
+      categorias.forEach(cat => {
+        select.innerHTML += `<option value="${cat._id}">${cat.nombre}</option>`;
+      });
+      select.disabled = false;
+    }
+    
+    proposeModalElement.show();
+
+  } catch (error) {
+    alerta.textContent = error.message;
+    alerta.classList.remove('d-none');
+  }
+}
+
+async function handleProposeSubmit(e) {
+  e.preventDefault();
+  const alerta = document.getElementById('propose-alerta');
+  const submitButton = document.getElementById('propose-submit-btn');
+  alerta.classList.add('d-none');
+  submitButton.disabled = true;
+
+  const datos = {
+    nombre: document.getElementById('propose-nombre').value,
+    descripcion: document.getElementById('propose-descripcion').value,
+    ubicacion: document.getElementById('propose-ubicacion').value,
+    categoriaId: document.getElementById('propose-categoria').value,
+    imagenUrl: document.getElementById('propose-imagen').value || null
+  };
+
+  try {
+    const resultado = await crearRestaurante(datos);
+    
+    proposeModalElement.hide();
+    document.getElementById('propose-form').reset();
+    
+    showNotification(resultado.message, '¡Propuesta Enviada!');
+
+    loadAdminBadges();
+
+  } catch (error) {
+    alerta.textContent = error.message;
+    alerta.classList.remove('d-none');
+  } finally {
+    submitButton.disabled = false;
+  }
+}
+
+export async function loadAdminBadges() {
+  try {
+    const pendientes = await getRestaurantesPendientes();
+    
+    document.querySelectorAll('#aprobaciones-link').forEach(link => {
+      const oldBadge = link.querySelector('.badge');
+      if (oldBadge) oldBadge.remove();
+
+      if (pendientes.length > 0) {
+        link.insertAdjacentHTML('beforeend', `
+          <span class="badge rounded-pill text-bg-danger">${pendientes.length}</span>
+        `);
+      }
+    });
+
+  } catch (error) {
+    console.error('Error cargando badge de admin:', error);
+  }
+}
