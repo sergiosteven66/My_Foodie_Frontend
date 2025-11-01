@@ -460,3 +460,142 @@ function renderReseñaForm(miReseña) {
     initStarRating('#create-star-rating', (rating) => { reseñaFormRating = rating; });
   }
 }
+
+function initStarRating(selector, callback) {
+  const container = document.querySelector(selector);
+  if (!container) return;
+  const stars = Array.from(container.querySelectorAll('i'));
+  const setRating = (value) => {
+    stars.forEach((star, index) => {
+      star.classList.toggle('selected', index < value);
+      star.classList.remove('hover');
+    });
+  };
+  const setHover = (value) => {
+    stars.forEach((star, index) => {
+      star.classList.toggle('hover', index < value);
+      star.classList.remove('selected');
+    });
+  };
+  stars.forEach(star => {
+    const value = star.dataset.value;
+    star.addEventListener('mouseover', () => setHover(value));
+    star.addEventListener('click', () => {
+      const rating = star.dataset.value;
+      container.dataset.currentRating = rating; 
+      callback(Number(rating));
+      setRating(rating);
+    });
+  });
+  container.addEventListener('mouseleave', () => {
+    const currentRating = container.dataset.currentRating;
+    stars.forEach(s => s.classList.remove('hover'));
+    setRating(currentRating);
+  });
+  setRating(container.dataset.currentRating);
+}
+
+function handleReseñaListClick(e) {
+  const target = e.target.closest('button[data-action]');
+  if (!target) return;
+  const action = target.dataset.action;
+  const reseñaId = target.dataset.reseñaId;
+  if (action === 'like' || action === 'dislike') {
+    handleLikeDislikeClick(reseñaId, action);
+  }
+  if (action === 'edit') {
+    handleEditReseñaClick(reseñaId);
+  }
+  if (action === 'delete') {
+    handleDeleteReseñaClick(reseñaId);
+  }
+}
+
+async function handleReseñaSubmit(e) {
+  e.preventDefault();
+  const alerta = document.querySelector('#reseña-alerta');
+  alerta.classList.add('d-none');
+  const submitButton = e.target.querySelector('button[type="submit"]');
+  submitButton.disabled = true;
+  const comentario = document.querySelector('#comentario').value;
+  if (reseñaFormRating === 0) {
+    alerta.textContent = 'Por favor, selecciona una calificación.';
+    alerta.classList.remove('d-none');
+    submitButton.disabled = false;
+    return;
+  }
+  try {
+    const datos = { calificacion: reseñaFormRating, comentario };
+    await crearReseña(restauranteId, datos);
+    refreshReseñas(); 
+  } catch (error) {
+    alerta.textContent = error.message;
+    alerta.classList.remove('d-none');
+    submitButton.disabled = false;
+  }
+}
+
+async function handleLikeDislikeClick(reseñaId, tipo) {
+  const likeButton = document.querySelector(`button[data-reseña-id="${reseñaId}"][data-action="like"]`);
+  const dislikeButton = document.querySelector(`button[data-reseña-id="${reseñaId}"][data-action="dislike"]`);
+  if (!likeButton || !dislikeButton) return; 
+  likeButton.disabled = true;
+  dislikeButton.disabled = true;
+  try {
+    await likeDislikeReseña(reseñaId, tipo);
+    refreshReseñas();
+  } catch (error) {
+    console.error(error.message);
+    refreshReseñas(); 
+  }
+}
+
+function handleEditReseñaClick(reseñaId) {
+  const reseñaCard = document.querySelector(`#reseña-${reseñaId}`);
+  const comentario = reseñaCard.querySelector('[data-comentario]').dataset.comentario;
+  const calificacion = reseñaCard.querySelector('[data-calificacion]').dataset.calificacion;
+  document.querySelector('#edit-reseña-id').value = reseñaId;
+  document.querySelector('#edit-comentario').value = comentario;
+  const starContainer = document.querySelector('#edit-star-rating');
+  starContainer.dataset.currentRating = calificacion;
+  editFormRating = Number(calificacion);
+  initStarRating('#edit-star-rating', (rating) => { editFormRating = rating; });
+  modalEdit.show();
+}
+
+async function handleUpdateReseñaSubmit(e) {
+  e.preventDefault();
+  const reseñaId = document.querySelector('#edit-reseña-id').value;
+  const comentario = document.querySelector('#edit-comentario').value;
+  const calificacion = editFormRating;
+  if (calificacion === 0) return;
+  try {
+    const datos = { comentario, calificacion };
+    await actualizarReseñaApi(reseñaId, datos);
+    modalEdit.hide();
+    refreshReseñas();
+  } catch (error) {
+    console.error(`Error al actualizar: ${error.message}`);
+  }
+}
+
+function handleDeleteReseñaClick(reseñaId) {
+  document.querySelector('#delete-reseña-id').value = reseñaId;
+  modalDelete.show();
+}
+
+async function handleConfirmDeleteReseña() {
+  const reseñaId = document.querySelector('#delete-reseña-id').value;
+  const button = document.querySelector('#confirm-delete-button');
+  button.disabled = true;
+  try {
+    await eliminarReseñaApi(reseñaId);
+    modalDelete.hide();
+    refreshReseñas(); 
+  } catch (error) {
+    console.error(`Error al eliminar: ${error.message}`);
+    modalDelete.hide();
+  } finally {
+    button.disabled = false;
+  }
+}
