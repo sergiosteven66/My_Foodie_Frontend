@@ -118,3 +118,66 @@ function renderRestauranteCard(restaurante) {
   `;
 }
 
+function addEventListeners() {
+  const container = document.querySelector('#lista-restaurantes-pendientes');
+  
+  container.addEventListener('click', (e) => {
+    const target = e.target.closest('button[data-action]');
+    if (!target) return;
+
+    const action = target.dataset.action;
+    const id = target.dataset.id;
+
+    if (action === 'aprobar') {
+      handleAprobar(id, target);
+    }
+    if (action === 'rechazar') {
+      handleRechazar(id);
+    }
+  });
+
+  document.querySelector('#confirm-reject-button').addEventListener('click', handleConfirmRechazar);
+}
+
+async function handleAprobar(id, button) {
+  button.disabled = true;
+  button.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Aprobando...';
+
+  try {
+    await aprobarRestaurante(id);
+    document.querySelector(`#restaurante-${id}`).remove();
+    loadRestaurantesPendientes(); 
+    loadAdminBadges();
+
+  } catch (error) {
+    showNotification(error.message, 'Error al Aprobar', 'error');
+
+    button.disabled = false;
+    button.innerHTML = '<i class="bi bi-check-lg me-2"></i>Aprobar';
+  }
+}
+
+function handleRechazar(id) {
+  document.querySelector('#reject-restaurante-id').value = id;
+  modalRejectElement.show();
+}
+
+async function handleConfirmRechazar() {
+  const id = document.querySelector('#reject-restaurante-id').value;
+  const button = document.querySelector('#confirm-reject-button');
+  button.disabled = true;
+
+  try {
+    await eliminarRestaurante(id); 
+    modalRejectElement.hide();
+    document.querySelector(`#restaurante-${id}`).remove();
+    loadRestaurantesPendientes();
+    loadAdminBadges();
+
+  } catch (error) {
+    modalRejectElement.hide();
+    showNotification(error.message, 'Error al Rechazar', 'error');
+  } finally {
+    button.disabled = false;
+  }
+}
