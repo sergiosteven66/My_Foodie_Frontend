@@ -256,3 +256,35 @@ function createNotificationModalHTML() {
     </div>
   `;
 }
+
+function createToastContainerHTML() {
+  return `
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100">
+      <div id="notificationToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+          <span id="notificationToastTitle">
+            </span>
+          <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body" id="notificationToastBody">
+          </div>
+      </div>
+    </div>
+  `;
+}
+
+function addLayoutEventListeners() {
+  document.querySelectorAll('#logout-button, #logout-button-mobile').forEach(btn => {
+    btn.addEventListener('click', () => {
+      logoutModalElement.show();
+    });
+  });
+
+  document.getElementById('confirm-logout-btn').addEventListener('click', () => {
+    removeToken();
+    window.location.href = 'index.html';
+  });
+
+  document.getElementById('proponer-restaurante-btn').addEventListener('click', handleOpenProposeModal);
+  document.getElementById('propose-form').addEventListener('submit', handleProposeSubmit);
+}
