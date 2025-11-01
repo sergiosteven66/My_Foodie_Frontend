@@ -129,3 +129,144 @@ async function loadFiltros() {
     container.innerHTML = `<span class="alert alert-danger">${error.message}</span>`;
   }
 }
+
+async function fetchAndRenderRestaurantes() {
+  if (loader) loader.classList.remove('d-none');
+  if (noResultados) noResultados.classList.add('d-none');
+  if (grid) grid.classList.add('d-none');
+  
+  try {
+    const restaurantes = await getRestaurantes(currentFilter, currentSort); 
+    
+    allRestaurantes = restaurantes; 
+    applySearchAndRender();
+
+  } catch (error) {
+    if (grid) grid.innerHTML = `<p class="alert alert-danger">${error.message}</p>`;
+    if (grid) grid.classList.remove('d-none');
+    
+  } finally {
+    if (loader) loader.classList.add('d-none');
+  }
+}
+
+function applySearchAndRender() {
+  let tempRestaurantes = [...allRestaurantes];
+
+  if (currentSearch) {
+    const searchTerm = currentSearch.toLowerCase().trim();
+    tempRestaurantes = tempRestaurantes.filter(rest => 
+      rest.nombre.toLowerCase().includes(searchTerm)
+    );
+  }
+
+  filteredRestaurantes = tempRestaurantes;
+  currentPage = 1;
+
+  displayPage(currentPage);
+  setupPagination();
+
+  if (filteredRestaurantes.length === 0) {
+    if (noResultados) noResultados.classList.remove('d-none');
+    if (grid) grid.classList.add('d-none');
+  } else {
+    if (noResultados) noResultados.classList.add('d-none');
+    if (grid) grid.classList.remove('d-none');
+  }
+}
+
+function displayPage(page) {
+  if (!grid) return;
+  
+  grid.innerHTML = '';
+  currentPage = page;
+
+  const startIndex = (page - 1) * RESTAURANTES_PER_PAGE;
+  const endIndex = page * RESTAURANTES_PER_PAGE;
+  
+  const paginatedItems = filteredRestaurantes.slice(startIndex, endIndex);
+
+  paginatedItems.forEach(restaurante => {
+    const cardHTML = createRestauranteCard(restaurante, 'grid');
+    grid.insertAdjacentHTML('beforeend', cardHTML);
+  });
+  
+  document.querySelectorAll('#pagination-container .page-item').forEach(item => {
+    item.classList.remove('active');
+    if (Number(item.dataset.page) === currentPage) {
+      item.classList.add('active');
+    }
+  });
+}
+
+function setupPagination() {
+  const container = document.querySelector('#pagination-container');
+  if (!container) return; 
+
+  container.innerHTML = '';
+  
+  const totalPages = Math.ceil(filteredRestaurantes.length / RESTAURANTES_PER_PAGE);
+  if (totalPages <= 1) return; 
+
+  const ul = document.createElement('ul');
+  ul.className = 'pagination';
+
+  for (let i = 1; i <= totalPages; i++) {
+    const li = document.createElement('li');
+    li.className = 'page-item';
+    if (i === currentPage) li.classList.add('active');
+    li.dataset.page = i; 
+
+    const a = document.createElement('a');
+    a.className = 'page-link';
+    a.href = '#';
+    a.textContent = i;
+    
+    a.addEventListener('click', (e) => {
+      e.preventDefault();
+      displayPage(i);
+    });
+    
+    li.append(a);
+    ul.append(li);
+  }
+  container.append(ul);
+}
+
+function handleFiltroClick(e) {
+  const botonClicado = e.target;
+  currentFilter = botonClicado.dataset.id; 
+
+  const container = document.querySelector('#filtros-categoria');
+  container.querySelectorAll('button').forEach(btn => {
+    if (btn.dataset.id === currentFilter) {
+      btn.className = 'btn btn-primary';
+    } else {
+      btn.className = 'btn btn-outline-primary';
+    }
+  });
+
+  fetchAndRenderRestaurantes();
+}
+
+function handleSortClick(sortType) {
+  currentSort = sortType;
+
+  const buttonText = document.querySelector('#sort-dropdown-button');
+  const linkClicked = document.querySelector(`.dropdown-item[data-sort="${sortType}"]`);
+  
+  buttonText.textContent = `Ordenar por: ${linkClicked.textContent.trim()}`;
+  
+  document.querySelectorAll('.dropdown-item[data-sort]').forEach(link => {
+    link.classList.remove('active');
+  });
+  
+  linkClicked.classList.add('active');
+
+  fetchAndRenderRestaurantes();
+}
+
+function handleSearchInput(searchTerm) {
+  currentSearch = searchTerm; 
+  applySearchAndRender();
+}
