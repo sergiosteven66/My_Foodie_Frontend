@@ -253,3 +253,46 @@ async function handleConfirmDeleteRestaurante() {
   }
 }
 
+function renderPlatosListString(platos) {
+  if (platos.length === 0) {
+    return '<li class="list-group-item text-muted">Aún no hay platos registrados.</li>';
+  }
+  const placeholderImg = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100&h=100&fit=crop';
+  
+  return platos.map(plato => `
+    <li class="list-group-item d-flex justify-content-between align-items-center gap-3">
+      <section class="d-flex align-items-center gap-3 flex-grow-1">
+        <img 
+          src="${plato.imagenUrl || placeholderImg}" 
+          alt="${plato.nombre}"
+          class="rounded"
+          style="width: 64px; height: 64px; object-fit: cover;"
+        >
+        <div class="flex-grow-1">
+          <h6 class="my-0 fw-bold">${plato.nombre}</h6>
+          <small class="text-muted d-block">${plato.descripcion}</small>
+          <span class="text-primary fw-bold">$${plato.precio}</span>
+        </div>
+      </section>
+      ${currentUserRole === 'admin' ? `
+        <section class="d-flex gap-2">
+          <button 
+            class="btn btn-outline-primary btn-sm" 
+            data-action="edit-plato"
+            data-plato-id="${plato._id}"
+            data-nombre="${plato.nombre}"
+            data-descripcion="${plato.descripcion}"
+            data-precio="${plato.precio}"
+            data-imagen="${plato.imagenUrl || ''}"
+          > <i class="bi bi-pencil"></i> </button>
+          <button 
+            class="btn btn-outline-danger btn-sm" 
+            data-action="delete-plato"
+            data-plato-id="${plato._id}"
+          > <i class="bi bi-trash"></i> </button>
+        </section>
+      ` : ''}
+    </li>
+  `).join('');
+}
+
