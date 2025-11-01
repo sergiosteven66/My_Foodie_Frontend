@@ -153,3 +153,59 @@ export function initLayout() {
     loadAdminBadges();
   }
 }
+
+function createProposeModalHTML() {
+  return `
+    <div class="modal fade" id="proposeModal" tabindex="-1" aria-hidden="true">
+      <section class="modal-dialog">
+        <form class="modal-content" id="propose-form">
+          <header class="modal-header">
+            <h5 class="modal-title">Proponer un Restaurante</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </header>
+          <article class="modal-body">
+            <p class="text-muted small mb-3">
+              Tu propuesta será revisada por un administrador antes de ser pública.
+            </p>
+            <fieldset>
+              <legend class="visually-hidden">Formulario de Propuesta</legend>
+              
+              <section class="mb-3">
+                <label for="propose-nombre" class="form-label">Nombre del Restaurante</label>
+                <input type="text" class="form-control" id="propose-nombre" required>
+              </section>
+
+              <section class="mb-3">
+                <label for="propose-categoria" class="form-label">Categoría</label>
+                <select class="form-select" id="propose-categoria" required>
+                  <option value="">Cargando categorías...</option>
+                </select>
+              </section>
+
+              <section class="mb-3">
+                <label for="propose-descripcion" class="form-label">Descripción Breve</label>
+                <textarea class="form-control" id="propose-descripcion" rows="3" required></textarea>
+              </section>
+
+              <section class="mb-3">
+                <label for="propose-ubicacion" class="form-label">Ubicación (Dirección)</label>
+                <input type="text" class="form-control" id="propose-ubicacion" required>
+              </section>
+
+              <section class="mb-3">
+                <label for="propose-imagen" class="form-label">URL de Imagen (Opcional)</label>
+                <input type="url" class="form-control" id="propose-imagen" placeholder="https://...">
+              </section>
+
+              <section id="propose-alerta" class="alert alert-danger d-none"></section>
+            </fieldset>
+          </article>
+          <footer class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-primary" id="propose-submit-btn">Enviar Propuesta</button>
+          </footer>
+        </form>
+      </section>
+    </div>
+  `;
+}
