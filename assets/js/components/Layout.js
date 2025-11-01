@@ -209,3 +209,50 @@ function createProposeModalHTML() {
     </div>
   `;
 }
+
+function createLogoutModalHTML() {
+  return `
+    <div class="modal fade" id="logoutModal" tabindex="-1" aria-hidden="true">
+      <section class="modal-dialog modal-dialog-centered">
+        <article class="modal-content">
+          <header class="modal-header">
+            <h5 class="modal-title">Confirmar Cierre de Sesión</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </header>
+          <article class="modal-body">
+            <p>¿Estás seguro de que deseas cerrar sesión?</p>
+          </article>
+          <footer class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="button" class="btn btn-danger" id="confirm-logout-btn">Sí, Cerrar Sesión</button>
+          </footer>
+        </article>
+      </section>
+    </div>
+  `;
+}
+
+function createNotificationModalHTML() {
+  return `
+    <div class="modal fade" id="notificationModal" tabindex="-1" aria-hidden="true">
+      <section class="modal-dialog modal-dialog-centered">
+        <article class="modal-content">
+          <header class="modal-header border-0">
+             <h5 class="modal-title d-flex align-items-center gap-2">
+                <span id="notificationModalIcon">
+                </span>
+                <span id="notificationModalTitle">¡Éxito!</span>
+             </h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </header>
+          <article class="modal-body">
+            <p id="notificationModalBody">El mensaje irá aquí.</p>
+          </article>
+          <footer class="modal-footer border-0">
+            <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Entendido</button>
+          </footer>
+        </article>
+      </section>
+    </div>
+  `;
+}
