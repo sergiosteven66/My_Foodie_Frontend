@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es" data-bs-theme="light">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Foodie - Aprobaciones</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="../assets/css/style.css" />
+</head>
+
+<body class="bg-body-tertiary">
+
+    <div class="modal fade" id="rejectModal" tabindex="-1" aria-hidden="true">
+        <section class="modal-dialog">
+            <article class="modal-content">
+                <header class="modal-header">
+                    <h5 class="modal-title">Confirmar Rechazo</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </header>
+                <article class="modal-body">
+                    <p>¿Estás seguro de que deseas rechazar este restaurante? Esta acción lo eliminará permanentemente.
+                    </p>
+                    <input type="hidden" id="reject-restaurante-id">
+                </article>
+                <footer class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-danger" id="confirm-reject-button">Sí, Rechazar</button>
+                </footer>
+            </article>
+        </section>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../assets/js/main.js" type="module"></script>
+</body>
+
+</html>
