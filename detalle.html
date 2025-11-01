@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="es" data-bs-theme="light">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Foodie - Cargando...</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+
+<body class="bg-body-tertiary">
+
+    <div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
+        <section class="modal-dialog">
+            <form class="modal-content" id="edit-form">
+                <header class="modal-header">
+                    <h5 class="modal-title">Editar Reseña</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </header>
+                <article class="modal-body">
+                    <input type="hidden" id="edit-reseña-id">
+                    <section class="mb-3">
+                        <label class="form-label">Calificación</label>
+                        <div class="star-rating" id="edit-star-rating" data-current-rating="0">
+                            <i class="bi bi-star-fill" data-value="1"></i>
+                            <i class="bi bi-star-fill" data-value="2"></i>
+                            <i class="bi bi-star-fill" data-value="3"></i>
+                            <i class="bi bi-star-fill" data-value="4"></i>
+                            <i class="bi bi-star-fill" data-value="5"></i>
+                        </div>
+                    </section>
+                    <section class="mb-3">
+                        <label for="edit-comentario" class="form-label">Comentario</label>
+                        <textarea id="edit-comentario" class="form-control" rows="4" required></textarea>
+                    </section>
+                </article>
+                <footer class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                </footer>
+            </form>
+        </section>
+    </div>
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+        <section class="modal-dialog">
+            <article class="modal-content">
+                <header class="modal-header">
+                    <h5 class="modal-title">Confirmar Eliminación</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </header>
+                <article class="modal-body">
+                    <p>¿Estás seguro de que deseas eliminar tu reseña? Esta acción no se puede deshacer.</p>
+                    <input type="hidden" id="delete-reseña-id">
+                </article>
+                <footer class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-danger" id="confirm-delete-button">Sí, Eliminar</button>
+                </footer>
+            </article>
+        </section>
+    </div>
+
+    <div class="modal fade" id="platoModal" tabindex="-1" aria-hidden="true">
+        <section class="modal-dialog">
+            <form class="modal-content" id="plato-form">
+                <header class="modal-header">
+                    <h5 class="modal-title" id="plato-modal-title">Añadir Plato</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </header>
+                <article class="modal-body">
+                    <input type="hidden" id="plato-id">
+                    <fieldset>
+                        <legend class="visually-hidden">Formulario de Plato</legend>
+                        <section class="mb-3">
+                            <label for="plato-nombre" class="form-label">Nombre del Plato</label>
+                            <input type="text" class="form-control" id="plato-nombre" required>
+                        </section>
+                        <section class="mb-3">
+                            <label for="plato-descripcion" class="form-label">Descripción</label>
+                            <textarea class="form-control" id="plato-descripcion" rows="3" required></textarea>
+                        </section>
+                        <section class="mb-3">
+                            <label for="plato-precio" class="form-label">Precio</label>
+                            <input type="number" class="form-control" id="plato-precio" required min="0" step="0.01">
+                        </section>
+                        <section class="mb-3">
+                            <label for="plato-imagen" class="form-label">URL de Imagen (Opcional)</label>
+                            <input type="url" class="form-control" id="plato-imagen" placeholder="https://...">
+                        </section>
+                        <section id="plato-alerta" class="alert alert-danger d-none"></section>
+                    </fieldset>
+                </article>
+                <footer class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" id="plato-submit-btn">Guardar Plato</button>
+                </footer>
+            </form>
+        </section>
+    </div>
+
+    <div class="modal fade" id="deletePlatoModal" tabindex="-1" aria-hidden="true">
+        <section class="modal-dialog">
+            <article class="modal-content">
+                <header class="modal-header">
+                    <h5 class="modal-title">Confirmar Eliminación</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </header>
+                <article class="modal-body">
+                    <p>¿Estás seguro de que deseas eliminar este plato? Esta acción no se puede deshacer.</p>
+                    <input type="hidden" id="delete-plato-id">
+                </article>
+                <footer class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-danger" id="confirm-delete-plato-button">Sí, Eliminar</button>
+                </footer>
+            </article>
+        </section>
+    </div>
+
+    <div class="modal fade" id="editRestauranteModal" tabindex="-1" aria-hidden="true">
+        <section class="modal-dialog">
+            <form class="modal-content" id="edit-restaurante-form">
+                <header class="modal-header">
+                    <h5 class="modal-title">Editar Restaurante</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </header>
+                <article class="modal-body">
+                    <fieldset>
+                        <legend class="visually-hidden">Formulario de Edición</legend>
+                        
+                        <section class="mb-3">
+                            <label for="edit-rest-nombre" class="form-label">Nombre del Restaurante</label>
+                            <input type="text" class="form-control" id="edit-rest-nombre" required>
+                        </section>
+
+                        <section class="mb-3">
+                            <label for="edit-rest-categoria" class="form-label">Categoría</label>
+                            <select class="form-select" id="edit-rest-categoria" required>
+                                <option value="">Cargando categorías...</option>
+                            </select>
+                        </section>
+
+                        <section class="mb-3">
+                            <label for="edit-rest-descripcion" class="form-label">Descripción Breve</label>
+                            <textarea class="form-control" id="edit-rest-descripcion" rows="3" required></textarea>
+                        </section>
+
+                        <section class="mb-3">
+                            <label for="edit-rest-ubicacion" class="form-label">Ubicación (Dirección)</label>
+                            <input type="text" class="form-control" id="edit-rest-ubicacion" required>
+                        </section>
+
+                        <section class="mb-3">
+                            <label for="edit-rest-imagen" class="form-label">URL de Imagen (Opcional)</label>
+                            <input type="url" class="form-control" id="edit-rest-imagen" placeholder="https://...">
+                        </section>
+
+                        <section id="edit-rest-alerta" class="alert alert-danger d-none"></section>
+                    </fieldset>
+                </article>
+                <footer class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" id="edit-rest-submit-btn">Guardar Cambios</button>
+                </footer>
+            </form>
+        </section>
+    </div>
+
+    <div class="modal fade" id="deleteRestauranteModal" tabindex="-1" aria-hidden="true">
+        <section class="modal-dialog">
+            <article class="modal-content">
+                <header class="modal-header">
+                    <h5 class="modal-title">Confirmar Eliminación</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </header>
+                <article class="modal-body">
+                    <p>¿Estás seguro de que deseas eliminar este restaurante?</p>
+                    <p class="text-danger"><strong>¡Atención!</strong> Se eliminarán también todos sus platos y reseñas asociadas permanentemente.</p>
+                </article>
+                <footer class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-danger" id="confirm-delete-restaurante-button">Sí, Eliminar</button>
+                </footer>
+            </article>
+        </section>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/main.js" type="module"></script>
+</body>
+
+</html>
