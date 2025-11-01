@@ -149,3 +149,107 @@ function renderDetalle(mainContent, restaurante) {
   
   mainContent.innerHTML = detalleHTML;
 }
+
+function addEventListeners(restaurante) {
+  document.querySelector('#lista-reseñas').addEventListener('click', handleReseñaListClick);
+  initStarRating('#edit-star-rating', (rating) => { editFormRating = rating; });
+  document.querySelector('#edit-form').addEventListener('submit', handleUpdateReseñaSubmit);
+  document.querySelector('#confirm-delete-button').addEventListener('click', handleConfirmDeleteReseña);
+
+  if (currentUserRole === 'admin') {
+    document.querySelector('#add-plato-btn').addEventListener('click', handleShowCreatePlatoModal);
+    document.querySelector('#lista-platos').addEventListener('click', handlePlatoListClick);
+    document.querySelector('#plato-form').addEventListener('submit', handlePlatoFormSubmit);
+    document.querySelector('#confirm-delete-plato-button').addEventListener('click', handleConfirmDeletePlato);
+    
+    document.querySelector('#edit-rest-btn').addEventListener('click', handleShowEditRestauranteModal);
+    document.querySelector('#delete-rest-btn').addEventListener('click', handleShowDeleteRestauranteModal);
+    document.querySelector('#edit-restaurante-form').addEventListener('submit', handleEditRestauranteSubmit);
+    document.querySelector('#confirm-delete-restaurante-button').addEventListener('click', handleConfirmDeleteRestaurante);
+  }
+}
+
+async function loadCategoriasIntoModal(selectElementId, selectedId) {
+  const select = document.getElementById(selectElementId);
+  select.innerHTML = '<option value="">Cargando...</option>';
+  try {
+    const categorias = await getCategorias();
+    select.innerHTML = '';
+    categorias.forEach(cat => {
+      select.innerHTML += `
+        <option value="${cat._id}" ${cat._id === selectedId ? 'selected' : ''}>
+          ${cat.nombre}
+        </option>
+      `;
+    });
+  } catch (error) {
+    select.innerHTML = '<option value="">Error al cargar</option>';
+  }
+}
+
+function handleShowEditRestauranteModal() {
+  const form = document.querySelector('#edit-restaurante-form');
+  form.reset();
+  document.querySelector('#edit-rest-nombre').value = restauranteActual.nombre;
+  document.querySelector('#edit-rest-descripcion').value = restauranteActual.descripcion;
+  document.querySelector('#edit-rest-ubicacion').value = restauranteActual.ubicacion;
+  document.querySelector('#edit-rest-imagen').value = restauranteActual.imagenUrl || '';
+  loadCategoriasIntoModal('edit-rest-categoria', restauranteActual.categoriaId);
+  document.querySelector('#edit-rest-alerta').classList.add('d-none');
+  modalEditRestaurante.show();
+}
+
+function handleShowDeleteRestauranteModal() {
+  modalDeleteRestaurante.show();
+}
+
+async function handleEditRestauranteSubmit(e) {
+  e.preventDefault();
+  const alerta = document.querySelector('#edit-rest-alerta');
+  const submitButton = document.querySelector('#edit-rest-submit-btn');
+  alerta.classList.add('d-none');
+  submitButton.disabled = true;
+
+  const datos = {
+    nombre: document.querySelector('#edit-rest-nombre').value,
+    descripcion: document.querySelector('#edit-rest-descripcion').value,
+    ubicacion: document.querySelector('#edit-rest-ubicacion').value,
+    categoriaId: document.querySelector('#edit-rest-categoria').value,
+    imagenUrl: document.querySelector('#edit-rest-imagen').value || null
+  };
+
+  try {
+    await actualizarRestauranteApi(restauranteId, datos); 
+    modalEditRestaurante.hide();
+    window.location.reload();
+
+  } catch (error) {
+    alerta.textContent = error.message;
+    alerta.classList.remove('d-none');
+  } finally {
+    submitButton.disabled = false;
+  }
+}
+
+async function handleConfirmDeleteRestaurante() {
+  const button = document.querySelector('#confirm-delete-restaurante-button');
+  button.disabled = true;
+
+  try {
+    await eliminarRestauranteApi(restauranteId); 
+    modalDeleteRestaurante.hide();
+
+    showNotification('Restaurante eliminado correctamente.', '¡Éxito!');
+    
+    setTimeout(() => {
+        window.location.href = '/restaurantes.html';
+    }, 1500);
+
+  } catch (error) {
+    modalDeleteRestaurante.hide();
+    showNotification(error.message, 'Error al Eliminar', 'error');
+  } finally {
+    button.disabled = false;
+  }
+}
+
