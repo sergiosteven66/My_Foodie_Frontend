@@ -296,3 +296,167 @@ function renderPlatosListString(platos) {
   `).join('');
 }
 
+async function refreshPlatos(platosCargados = null) {
+  const container = document.querySelector('#lista-platos');
+  container.innerHTML = `<li class="list-group-item text-muted">Actualizando...</li>`;
+  try {
+    let platos;
+    if (platosCargados) {
+      platos = platosCargados; 
+    } else {
+      const restaurante = await getRestauranteById(restauranteId);
+      platos = restaurante.platos;
+    }
+    container.innerHTML = renderPlatosListString(platos);
+  } catch (error) {
+    container.innerHTML = `<li class="list-group-item text-danger">Error al refrescar platos.</li>`;
+  }
+}
+
+function handlePlatoListClick(e) {
+  const target = e.target.closest('button[data-action]');
+  if (!target) return;
+  const action = target.dataset.action;
+  const platoId = target.dataset.platoId;
+  if (action === 'edit-plato') {
+    handleShowEditPlatoModal(target.dataset);
+  }
+  if (action === 'delete-plato') {
+    handleShowDeletePlatoModal(platoId);
+  }
+}
+
+function handleShowCreatePlatoModal() {
+  const form = document.querySelector('#plato-form');
+  form.reset();
+  document.querySelector('#plato-id').value = '';
+  document.querySelector('#plato-modal-title').textContent = 'Añadir Plato';
+  document.querySelector('#plato-alerta').classList.add('d-none');
+  modalPlato.show();
+}
+
+function handleShowEditPlatoModal(dataset) {
+  const form = document.querySelector('#plato-form');
+  form.reset();
+  document.querySelector('#plato-id').value = dataset.platoId;
+  document.querySelector('#plato-nombre').value = dataset.nombre;
+  document.querySelector('#plato-descripcion').value = dataset.descripcion;
+  document.querySelector('#plato-precio').value = dataset.precio;
+  document.querySelector('#plato-imagen').value = dataset.imagen;
+  document.querySelector('#plato-modal-title').textContent = 'Editar Plato';
+  document.querySelector('#plato-alerta').classList.add('d-none');
+  modalPlato.show();
+}
+
+function handleShowDeletePlatoModal(platoId) {
+  document.querySelector('#delete-plato-id').value = platoId;
+  modalDeletePlato.show();
+}
+
+async function handlePlatoFormSubmit(e) {
+  e.preventDefault();
+  const alerta = document.querySelector('#plato-alerta');
+  const submitButton = document.querySelector('#plato-submit-btn');
+  alerta.classList.add('d-none');
+  submitButton.disabled = true;
+
+  const platoId = document.querySelector('#plato-id').value;
+  const datos = {
+    nombre: document.querySelector('#plato-nombre').value,
+    descripcion: document.querySelector('#plato-descripcion').value,
+    precio: parseFloat(document.querySelector('#plato-precio').value),
+    imagenUrl: document.querySelector('#plato-imagen').value || null,
+  };
+
+  try {
+    if (platoId) {
+      await actualizarPlato(platoId, datos);
+    } else {
+      await crearPlato(restauranteId, datos);
+    }
+    modalPlato.hide();
+    refreshPlatos(); 
+  } catch (error) {
+    alerta.textContent = error.message;
+    alerta.classList.remove('d-none');
+  } finally {
+    submitButton.disabled = false;
+  }
+}
+
+async function handleConfirmDeletePlato() {
+  const platoId = document.querySelector('#delete-plato-id').value;
+  const button = document.querySelector('#confirm-delete-plato-button');
+  button.disabled = true;
+  try {
+    await eliminarPlato(platoId);
+    modalDeletePlato.hide();
+    refreshPlatos(); 
+  } catch (error) {
+    modalDeletePlato.hide();
+    showNotification(error.message, 'Error al Eliminar', 'error');
+  } finally {
+    button.disabled = false;
+  }
+}
+
+async function refreshReseñas() {
+  const container = document.querySelector('#lista-reseñas');
+  const formContainer = document.querySelector('#form-reseña-container');
+  container.innerHTML = `<div class="list-group-item text-muted">Actualizando...</div>`;
+  formContainer.innerHTML = `<div class="card-body text-muted">Cargando...</div>`;
+
+  try {
+    const reseñas = await getReseñasPorRestaurante(restauranteId);
+    container.innerHTML = renderReseñasListString(reseñas);
+    const miReseña = reseñas.find(r => r.usuarioId === currentUserId);
+    renderReseñaForm(miReseña);
+  } catch (error) {
+    container.innerHTML = `<p class="list-group-item text-danger">Error al refrescar reseñas.</p>`;
+  }
+}
+
+function renderReseñasListString(reseñas) {
+  if (reseñas.length > 0) {
+    return reseñas.map(r => createReseñaCard(r, currentUserId)).join('');
+  } else {
+    return '<p class="list-group-item text-muted" id="sin-reseñas">Sé el primero en dejar una reseña.</p>';
+  }
+}
+
+function renderReseñaForm(miReseña) {
+  const formContainer = document.querySelector('#form-reseña-container');
+  if (miReseña) {
+    formContainer.innerHTML = `
+      <div class="card-body text-center">
+        <p class="text-muted"><i class="bi bi-check-circle-fill text-success me-2"></i>Ya has enviado una reseña.</p>
+      </div>
+    `;
+  } else {
+    formContainer.innerHTML = `
+      <form class="card-body" id="reseña-form">
+        <fieldset>
+          <legend class="visually-hidden">Formulario de Reseña</legend>
+          <section class="mb-3">
+            <label class="form-label">Calificación</label>
+            <div class="star-rating" id="create-star-rating" data-current-rating="0">
+              <i class="bi bi-star-fill" data-value="1"></i>
+              <i class="bi bi-star-fill" data-value="2"></i>
+              <i class="bi bi-star-fill" data-value="3"></i>
+              <i class="bi bi-star-fill" data-value="4"></i>
+              <i class="bi bi-star-fill" data-value="5"></i>
+            </div>
+          </section>
+          <section class="mb-3">
+            <label for="comentario" class="form-label">Comentario</label>
+            <textarea id="comentario" class="form-control" rows="3" required></textarea>
+          </section>
+          <button type="submit" class="btn btn-primary w-100">Publicar Reseña</button>
+          <section id="reseña-alerta" class="alert alert-danger mt-3 d-none"></section>
+        </fieldset>
+      </form>
+    `;
+    document.querySelector('#reseña-form')?.addEventListener('submit', handleReseñaSubmit);
+    initStarRating('#create-star-rating', (rating) => { reseñaFormRating = rating; });
+  }
+}
