@@ -101,11 +101,16 @@ intuitiva para una plataforma de reseñas.
 ### 📊 Pantallas del Diseño
 
 -   **Pantalla de Inicio**
-![alt text](assets/img/index.png)
+
+![inicio](assets/img/index.png)
+
 -   **Pantalla de Dashboard**
-![alt text](assets/img/dashboard.png)
+
+![dashboard](assets/img/dashboard.png)
+
 -   **Panel de Detalle de restaurante**
-![alt text](<assets/img/detalle restaurante.png>)
+
+![restaurante](<assets/img/detalle restaurante.png>)
 
 🔗 **Link de Figma:** [Ver diseño completo en Figma](https://www.figma.com/proto/AYS9VAO7x1yqoeBFTh1nij/Sin-t%C3%ADtulo?node-id=0-1&t=K3x5RzyDJ06D5l35-1)
 
